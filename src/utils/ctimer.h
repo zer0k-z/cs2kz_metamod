@@ -54,5 +54,6 @@ CTimer<Args...> *StartTimer(typename CTimer<Args...>::Fn fn, Args... args, bool 
 {
 	auto timer = new CTimer<Args...>(useRealTime, fn, args...);
 	g_pKZUtils->AddTimer(timer, preserveMapChange);
+	g_PersistentTimers.Purge();
 	return timer;
 }
