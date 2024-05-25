@@ -72,6 +72,7 @@ void KZUtils::AddTimer(CTimerBase *timer, bool preserveMapChange)
 	if (preserveMapChange)
 	{
 		g_PersistentTimers.AddToTail(timer);
+		g_PersistentTimers.Purge();
 	}
 	else
 	{

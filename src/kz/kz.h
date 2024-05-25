@@ -186,6 +186,8 @@ public:
 		this->player = player;
 	}
 
+	virtual ~KZBaseService() = default;
+
 	// To be implemented by each service class
 	virtual void Reset() {}
 };

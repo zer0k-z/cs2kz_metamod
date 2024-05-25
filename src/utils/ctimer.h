@@ -14,6 +14,7 @@ class CTimerBase
 public:
 	CTimerBase(f64 initialInterval, bool useRealTime) : interval(initialInterval), useRealTime(useRealTime) {};
 
+	virtual ~CTimerBase() = default;
 	virtual bool Execute() = 0;
 
 	f64 interval {};
@@ -38,7 +39,9 @@ public:
 
 	explicit CTimer(bool useRealTime, Fn fn, Args... args) : CTimerBase(0.0, useRealTime), m_fn(fn), m_args(std::make_tuple(std::move(args)...)) {}
 
-	bool Execute() override
+	virtual ~CTimer() = default;
+
+	virtual bool Execute() override
 	{
 		interval = std::apply(m_fn, m_args);
 		return interval > 0;

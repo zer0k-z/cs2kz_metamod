@@ -299,7 +299,7 @@ public:
 		}
 	}
 
-	~CMovementPlayerManager()
+	virtual ~CMovementPlayerManager()
 	{
 		for (int i = 0; i < MAXPLAYERS + 1; i++)
 		{
