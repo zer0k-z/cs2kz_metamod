@@ -1,5 +1,6 @@
 #include "networkbasetypes.pb.h"
 
+#include "common.h"
 #include "cs2kz.h"
 #include "addresses.h"
 #include "gameconfig.h"
