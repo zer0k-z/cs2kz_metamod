@@ -14,6 +14,7 @@
 #include "goto/kz_goto.h"
 #include "style/kz_style.h"
 #include "timer/kz_timer.h"
+#include "replays/kz_replays.h"
 #include "tip/kz_tip.h"
 
 #include "sdk/entity/cbasetrigger.h"
@@ -53,6 +54,7 @@ void KZPlayer::Init()
 	this->timerService = new KZTimerService(this);
 	this->optionService = new KZOptionService(this);
 	this->tipService = new KZTipService(this);
+	this->replayService = new KZReplayService(this);
 	KZ::mode::InitModeService(this);
 	KZ::style::InitStyleService(this);
 }
@@ -127,6 +129,7 @@ void KZPlayer::OnPhysicsSimulatePost()
 		this->styleServices[i]->OnPhysicsSimulatePost();
 	}
 	this->timerService->OnPhysicsSimulatePost();
+	this->replayService->OnPhysicsSimulatePost();
 }
 
 void KZPlayer::OnProcessUsercmds(void *cmds, int numcmds)
@@ -183,6 +186,7 @@ void KZPlayer::OnProcessMovement()
 
 void KZPlayer::OnProcessMovementPost()
 {
+	this->replayService->OnProcessMovementPost();
 	if (this->specService->GetSpectatedPlayer())
 	{
 		this->specService->GetSpectatedPlayer()->hudService->DrawPanels(this);
