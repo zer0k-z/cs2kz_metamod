@@ -500,6 +500,8 @@ bool utils::CanSeeBox(Vector origin, Vector mins, Vector maxs)
 	return !trace.DidHit();
 }
 
+#include "fmtstr.h"
+
 bool utils::FindValidPositionAroundCenter(Vector center, Vector distFromCenter, Vector extraOffset, Vector &originDest, QAngle &anglesDest)
 {
 	Vector testOrigin;
@@ -517,7 +519,7 @@ bool utils::FindValidPositionAroundCenter(Vector center, Vector distFromCenter, 
 				testOrigin[0] = testOrigin[0] + (distFromCenter[0] + extraOffset[0]) * x + 32.0f * x * 0.5;
 				testOrigin[1] = testOrigin[1] + (distFromCenter[1] + extraOffset[1]) * y + 32.0f * y * 0.5;
 				testOrigin[2] = testOrigin[2] + (distFromCenter[2] + extraOffset[2]) * z + 72.0f * z;
-
+				META_CONPRINTF("Testing %s\n", testOrigin);
 				if (utils::IsSpawnValid(testOrigin) && utils::CanSeeBox(testOrigin, center - distFromCenter, center + distFromCenter))
 				{
 					originDest = testOrigin;
@@ -542,43 +544,42 @@ bool utils::FindValidPositionForTrigger(CBaseTrigger *trigger, Vector &originDes
 	{
 		return false;
 	}
-	// Let's just assume this trigger isn't rotated at all...
-	Vector mins = trigger->m_pCollision()->m_vecMins();
-	Vector maxs = trigger->m_pCollision()->m_vecMaxs();
 	Vector origin = trigger->m_CBodyComponent->m_pSceneNode->m_vecAbsOrigin();
-	Vector center = origin + (maxs + mins) / 2;
-	Vector distFromCenter = (maxs - mins) / 2;
+	bbox_t boxBounds = GetSmallestBoundsContainingEntity(trigger);
+	Vector center = origin + (boxBounds.maxs + boxBounds.mins) / 2;
+	Vector distFromCenter = (boxBounds.maxs - boxBounds.mins) / 2;
 
-	// If the center or the bottom center is valid (which should be the case most of the time), then we can skip all the complicated stuff.
-	Vector bottomCenter = center;
-	bottomCenter.z -= distFromCenter.z - 0.03125;
-	if (utils::IsSpawnValid(bottomCenter))
-	{
-		originDest = bottomCenter;
-		anglesDest = vec3_angle;
-		return true;
-	}
+	//// If the center or the bottom center is valid (which should be the case most of the time), then we can skip all the complicated stuff.
+	// Vector bottomCenter = center;
+	// bottomCenter.z -= distFromCenter.z - 0.03125;
+	// if (utils::IsSpawnValid(bottomCenter))
+	//{
+	//	originDest = bottomCenter;
+	//	anglesDest = vec3_angle;
+	//	return true;
+	// }
 
-	if (utils::IsSpawnValid(center))
-	{
-		bbox_t bounds = {{-16.0f, -16.0f, 0.0f}, {16.0f, 16.0f, 72.0f}};
-		CTraceFilter filter;
-		filter.m_bHitSolid = true;
-		filter.m_bHitSolidRequiresGenerateContacts = true;
-		filter.m_bShouldIgnoreDisabledPairs = true;
-		filter.m_nCollisionGroup = COLLISION_GROUP_DEBRIS;
-		filter.m_nInteractsWith = 0x2c3011;
-		filter.m_bUnknown = true;
-		filter.m_nObjectSetMask = RNQUERY_OBJECTS_ALL;
-		filter.m_nInteractsAs = 0x40000;
-		trace_t tr;
-		g_pKZUtils->TracePlayerBBox(center, bottomCenter, bounds, &filter, tr);
-		originDest = tr.m_vEndPos;
-		anglesDest = vec3_angle;
-		return true;
-	}
+	// if (utils::IsSpawnValid(center))
+	//{
+	//	bbox_t bounds = {{-16.0f, -16.0f, 0.0f}, {16.0f, 16.0f, 72.0f}};
+	//	CTraceFilter filter;
+	//	filter.m_bHitSolid = true;
+	//	filter.m_bHitSolidRequiresGenerateContacts = true;
+	//	filter.m_bShouldIgnoreDisabledPairs = true;
+	//	filter.m_nCollisionGroup = COLLISION_GROUP_DEBRIS;
+	//	filter.m_nInteractsWith = 0x2c3011;
+	//	filter.m_bUnknown = true;
+	//	filter.m_nObjectSetMask = RNQUERY_OBJECTS_ALL;
+	//	filter.m_nInteractsAs = 0x40000;
+	//	trace_t tr;
+	//	g_pKZUtils->TracePlayerBBox(center, bottomCenter, bounds, &filter, tr);
+	//	originDest = tr.m_vEndPos;
+	//	anglesDest = vec3_angle;
+	//	return true;
+	// }
 
 	// TODO: This is mostly ported from GOKZ with no testing done on these. Might need to test this eventually.
+	META_CONPRINTF("trigger center %s, distances %s", VecToString(center), VecToString(distFromCenter));
 	Vector extraOffset = {-33.03125f, -33.03125f, -72.03125f}; // Negative because we want to go inwards.
 	if (FindValidPositionAroundCenter(center, distFromCenter, extraOffset, originDest, anglesDest))
 	{
@@ -612,6 +613,36 @@ void utils::ResetMapIfEmpty()
 
 	META_CONPRINTF("[KZ] Server is empty, triggering map reload...\n");
 	utils::ResetMap();
+}
+
+bbox_t utils::GetSmallestBoundsContainingEntity(CBaseModelEntity *ent)
+{
+	Vector mins = ent->m_pCollision()->m_vecMins();
+	Vector maxs = ent->m_pCollision()->m_vecMaxs();
+	QAngle angles = ent->m_CBodyComponent()->m_pSceneNode()->m_angRotation();
+	Vector boxCorners[8];
+	boxCorners[0] = Vector(mins.x, mins.y, mins.z);
+	boxCorners[1] = Vector(maxs.x, mins.y, mins.z);
+	boxCorners[2] = Vector(mins.x, maxs.y, mins.z);
+	boxCorners[3] = Vector(maxs.x, maxs.y, mins.z);
+	boxCorners[4] = Vector(mins.x, mins.y, maxs.z);
+	boxCorners[5] = Vector(maxs.x, mins.y, maxs.z);
+	boxCorners[6] = Vector(mins.x, maxs.y, maxs.z);
+	boxCorners[7] = Vector(maxs.x, maxs.y, maxs.z);
+
+	mins = {32768.0f, 32768.0f, 32768.0f};
+	maxs = {-32768.0f, -32768.0f, -32768.0f};
+
+	for (int i = 0; i < Q_ARRAYSIZE(boxCorners); i++)
+	{
+		VectorRotate(boxCorners[i], angles, boxCorners[i]);
+		for (int axis = 0; axis < 3; axis++)
+		{
+			mins[axis] = MIN(mins[axis], boxCorners[i][axis]);
+			maxs[axis] = MAX(maxs[axis], boxCorners[i][axis]);
+		}
+	}
+	return {mins, maxs};
 }
 
 void utils::ResetMap()

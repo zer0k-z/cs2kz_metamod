@@ -6,6 +6,7 @@
 
 class KZUtils;
 class CBasePlayerController;
+class CBaseModelEntity;
 
 namespace utils
 {
@@ -73,4 +74,7 @@ namespace utils
 
 	void ResetMap();
 	void ResetMapIfEmpty();
+
+	// Get the smallest non rotating bounding box that fully contains the entity (entity mins and maxs will always be inside this box).
+	bbox_t GetSmallestBoundsContainingEntity(CBaseModelEntity *ent);
 } // namespace utils

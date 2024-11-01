@@ -1,8 +1,8 @@
 #pragma once
-#include "cbaseentity.h"
+#include "cbasemodelentity.h"
 #include "utlsymbollarge.h"
 
-class CBaseTrigger : public CBaseEntity
+class CBaseTrigger : public CBaseModelEntity
 {
 public:
 	DECLARE_SCHEMA_CLASS(CBaseTrigger)
