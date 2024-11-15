@@ -38,6 +38,8 @@ typedef SndOpEventGuid_t EmitSoundFunc_t(IRecipientFilter &filter, CEntityIndex 
 typedef void TracePlayerBBox_t(const Vector &start, const Vector &end, const bbox_t &bounds, CTraceFilter *filter, trace_t &pm);
 typedef void SwitchTeam_t(CCSPlayerController *controller, int team);
 typedef void SetPawn_t(CBasePlayerController *controller, CCSPlayerPawn *pawn, bool, bool, bool);
+typedef void SetupRayFromTrace_t(Ray_t *pThis, trace_t &pm);
+typedef void DebugDrawRay_t(Ray_t *pThis, CTransform &transform, i32 r, i32 g, i32 b, i32 a, bool ignoreZ, f32 duration);
 
 namespace interfaces
 {
@@ -74,10 +76,10 @@ class KZUtils
 public:
 	KZUtils(TracePlayerBBox_t *TracePlayerBBox, InitGameTrace_t *InitGameTrace, InitPlayerMovementTraceFilter_t *InitPlayerMovementTraceFilter,
 			GetLegacyGameEventListener_t *GetLegacyGameEventListener, SnapViewAngles_t *SnapViewAngles, EmitSoundFunc_t *EmitSound,
-			SwitchTeam_t *SwitchTeam, SetPawn_t *SetPawn)
+			SwitchTeam_t *SwitchTeam, SetPawn_t *SetPawn, SetupRayFromTrace_t *SetupRayFromTrace, DebugDrawRay_t *DebugDrawRay)
 		: TracePlayerBBox(TracePlayerBBox), InitGameTrace(InitGameTrace), InitPlayerMovementTraceFilter(InitPlayerMovementTraceFilter),
 		  GetLegacyGameEventListener(GetLegacyGameEventListener), SnapViewAngles(SnapViewAngles), EmitSound(EmitSound), SwitchTeam(SwitchTeam),
-		  SetPawn(SetPawn)
+		  SetPawn(SetPawn), SetupRayFromTrace(SetupRayFromTrace), DebugDrawRay(DebugDrawRay)
 	{
 	}
 
@@ -89,6 +91,8 @@ public:
 	EmitSoundFunc_t *const EmitSound;
 	SwitchTeam_t *const SwitchTeam;
 	SetPawn_t *const SetPawn;
+	SetupRayFromTrace_t *const SetupRayFromTrace;
+	DebugDrawRay_t *const DebugDrawRay;
 
 	virtual CGameConfig *GetGameConfig();
 	virtual const CGlobalVars *GetServerGlobals();
