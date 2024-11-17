@@ -323,3 +323,9 @@ public:
 		return false;
 	}
 };
+
+struct RayExtended
+{
+	Ray_t ray;
+	CUtlVector<Vector> vertices;
+};

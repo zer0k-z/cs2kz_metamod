@@ -38,7 +38,7 @@ typedef SndOpEventGuid_t EmitSoundFunc_t(IRecipientFilter &filter, CEntityIndex 
 typedef void TracePlayerBBox_t(const Vector &start, const Vector &end, const bbox_t &bounds, CTraceFilter *filter, trace_t &pm);
 typedef void SwitchTeam_t(CCSPlayerController *controller, int team);
 typedef void SetPawn_t(CBasePlayerController *controller, CCSPlayerPawn *pawn, bool, bool, bool);
-typedef void SetupRayFromTrace_t(Ray_t *pThis, trace_t &pm);
+typedef void SetupRayFromTrace_t(RayExtended *pThis, trace_t &pm);
 typedef void DebugDrawRay_t(Ray_t *pThis, CTransform &transform, i32 r, i32 g, i32 b, i32 a, bool ignoreZ, f32 duration);
 
 namespace interfaces
@@ -141,6 +141,9 @@ public:
 
 	// Get the real and connected player count.
 	virtual u32 GetPlayerCount();
+
+	virtual void AddTriangleOverlay(Vector const &p1, Vector const &p2, Vector const &p3, int r, int g, int b, int a, bool noDepthTest,
+									f64 flDuration);
 };
 
 extern KZUtils *g_pKZUtils;
