@@ -77,7 +77,8 @@ bool utils::Initialize(ISmmAPI *ismm, char *error, size_t maxlen)
 	RESOLVE_SIG(g_pGameConfig, "CCSPlayerController_SwitchTeam", SwitchTeam_t, SwitchTeam);
 	RESOLVE_SIG(g_pGameConfig, "CBasePlayerController_SetPawn", SetPawn_t, SetPawn);
 	RESOLVE_SIG(g_pGameConfig, "SetupRayFromTrace", SetupRayFromTrace_t, SetupRayFromTrace);
-	RESOLVE_SIG(g_pGameConfig, "DebugDrawRay", DebugDrawRay_t, DebugDrawRay);
+	// RESOLVE_SIG(g_pGameConfig, "DebugDrawRay", DebugDrawRay_t, DebugDrawRay);
+	DebugDrawRay_t *DebugDrawRay = nullptr;
 	RESOLVE_SIG(g_pGameConfig, "DebugDrawMesh", DebugDrawMesh_t, DebugDrawMesh);
 
 	g_pKZUtils = new KZUtils(TracePlayerBBox, InitGameTrace, InitPlayerMovementTraceFilter, GetLegacyGameEventListener, SnapViewAngles, EmitSound,

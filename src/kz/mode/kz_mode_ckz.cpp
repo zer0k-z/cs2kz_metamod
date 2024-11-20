@@ -745,13 +745,7 @@ void KZClassicModeService::OnTryPlayerMove(Vector *pFirstDest, trace_t *pFirstTr
 	trace_t pierce;
 
 	bbox_t bounds;
-	bounds.mins = {-16, -16, 0};
-	bounds.maxs = {16, 16, 72};
-
-	if (this->player->GetMoveServices()->m_bDucked())
-	{
-		bounds.maxs.z = 54;
-	}
+	this->player->GetBBoxBounds(&bounds);
 
 	CTraceFilterPlayerMovementCS filter;
 	g_pKZUtils->InitPlayerMovementTraceFilter(filter, pawn, pawn->m_Collision().m_collisionAttribute().m_nInteractsWith(),
@@ -818,11 +812,6 @@ void KZClassicModeService::OnTryPlayerMove(Vector *pFirstDest, trace_t *pFirstTr
 							}
 							META_CONPRINTF("\n");
 							break;
-						}
-
-						default:
-						{
-							__debugbreak();
 						}
 					}
 					// Ray_t playerRay;
@@ -921,10 +910,6 @@ void KZClassicModeService::OnTryPlayerMove(Vector *pFirstDest, trace_t *pFirstTr
 				{
 					RayExtended ray;
 					g_pKZUtils->SetupRayFromTrace(&ray, pm);
-					if (ray.ray.m_eType == RAY_TYPE_HULL)
-					{
-						__debugbreak();
-					}
 					CTransform transform;
 					transform.SetToIdentity();
 					QAngle angles;
