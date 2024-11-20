@@ -105,7 +105,7 @@ void KZTimerService::StartZoneEndTouch(const KZCourseDescriptor *course)
 
 void KZTimerService::SplitZoneStartTouch(const KZCourseDescriptor *course, i32 splitNumber)
 {
-	if (!this->GetTimerRunning())
+	if (!this->timerRunning || course->course->guid != this->currentCourseGUID)
 	{
 		return;
 	}
@@ -123,7 +123,7 @@ void KZTimerService::SplitZoneStartTouch(const KZCourseDescriptor *course, i32 s
 
 void KZTimerService::CheckpointZoneStartTouch(const KZCourseDescriptor *course, i32 cpNumber)
 {
-	if (!this->GetTimerRunning())
+	if (!this->timerRunning || course->course->guid != this->currentCourseGUID)
 	{
 		return;
 	}
@@ -142,7 +142,7 @@ void KZTimerService::CheckpointZoneStartTouch(const KZCourseDescriptor *course, 
 
 void KZTimerService::StageZoneStartTouch(const KZCourseDescriptor *course, i32 stageNumber)
 {
-	if (!this->GetTimerRunning())
+	if (!this->timerRunning || course->course->guid != this->currentCourseGUID)
 	{
 		return;
 	}
@@ -1016,6 +1016,10 @@ void KZTimerService::InsertRecordToCache(f64 time, const KZCourse *course, Plugi
 	overall ? pb.overall.pbTime = time : pb.pro.pbTime = time;
 	KeyValues3 kv(KV3_TYPEEX_TABLE, KV3_SUBTYPE_UNSPECIFIED);
 	CUtlString error = "";
+	if (metadata.IsEmpty())
+	{
+		return;
+	}
 	LoadKV3FromJSON(&kv, &error, metadata.Get(), "");
 	if (!error.IsEmpty())
 	{
@@ -1081,6 +1085,10 @@ void KZTimerService::InsertPBToCache(f64 time, const KZCourse *course, PluginId 
 	overall ? pb.overall.pbTime = time : pb.pro.pbTime = time;
 	KeyValues3 kv(KV3_TYPEEX_TABLE, KV3_SUBTYPE_UNSPECIFIED);
 	CUtlString error = "";
+	if (metadata.IsEmpty())
+	{
+		return;
+	}
 	LoadKV3FromJSON(&kv, &error, metadata.Get(), "");
 	if (!error.IsEmpty())
 	{
