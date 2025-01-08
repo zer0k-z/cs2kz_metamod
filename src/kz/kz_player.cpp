@@ -104,11 +104,7 @@ void KZPlayer::OnPlayerActive()
 	g_pKZStyleManager->RefreshStyles(this);
 
 	this->optionService->OnPlayerActive();
-
-	if (this->globalService != nullptr)
-	{
-		this->globalService->OnPlayerActive();
-	}
+	this->globalService->OnPlayerActive();
 }
 
 void KZPlayer::OnAuthorized()

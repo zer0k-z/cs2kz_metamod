@@ -1,7 +1,5 @@
 #pragma once
 
-#include <optional>
-
 #include "../kz.h"
 #include "../checkpoint/kz_checkpoint.h"
 #include "kz/course/kz_course.h"
