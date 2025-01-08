@@ -159,7 +159,7 @@ public:
 			{
 				const KZCourse *course = KZ::course::GetCourse(this->courseName);
 				const PluginId modeID = KZ::mode::GetModeInfo(this->modeName).id;
-				const PBData *oldPB = player->timerService->GetCachedPB(course, modeID);
+				const PBData *oldPB = player->timerService->GetGlobalCachedPB(course, modeID);
 
 				f64 nubPbDiff = oldPB ? (globalRankData.time - oldPB->overall.pbTime) : 0;
 				f64 nubPointsDiff = oldPB ? (globalRankData.nubData.points - oldPB->overall.points) : 0;

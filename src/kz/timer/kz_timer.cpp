@@ -1077,7 +1077,7 @@ void KZTimerService::ClearPBCache()
 	this->localPBCache.clear();
 }
 
-const PBData *KZTimerService::GetCachedPB(const KZCourse *course, PluginId modeID)
+const PBData *KZTimerService::GetGlobalCachedPB(const KZCourse *course, PluginId modeID)
 {
 	PBDataKey key = ToPBDataKey(modeID, course->guid);
 
