@@ -119,6 +119,6 @@ private:
 	/**
 	 * Sends a WebSocket message.
 	 */
-	template<typename T, typename Callback>
-	static void SendMessage(const char *event, const T &data, Callback callback);
+	template<typename T, typename CallbackFunc>
+	static void SendMessage(const char *event, const T &data, CallbackFunc callback);
 };

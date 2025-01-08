@@ -476,8 +476,8 @@ void KZGlobalService::SendMessage(const char *event, const T &data)
 	KZGlobalService::apiSocket->send(payload.ToString());
 }
 
-template<typename T, typename Callback>
-void KZGlobalService::SendMessage(const char *event, const T &data, Callback callback)
+template<typename T, typename CallbackFunc>
+void KZGlobalService::SendMessage(const char *event, const T &data, CallbackFunc callback)
 {
 	u64 messageId = KZGlobalService::nextMessageId++;
 
