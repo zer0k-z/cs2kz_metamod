@@ -104,7 +104,6 @@ void KZPlayer::OnPlayerActive()
 	g_pKZStyleManager->RefreshStyles(this);
 
 	this->optionService->OnPlayerActive();
-	this->globalService->OnPlayerActive();
 }
 
 void KZPlayer::OnAuthorized()
@@ -112,6 +111,7 @@ void KZPlayer::OnAuthorized()
 	VPROF_BUDGET(__func__, "CS2KZ");
 	MovementPlayer::OnAuthorized();
 	this->databaseService->SetupClient();
+	this->globalService->OnPlayerAuthorized();
 }
 
 META_RES KZPlayer::GetPlayerMaxSpeed(f32 &maxSpeed)

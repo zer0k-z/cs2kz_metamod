@@ -30,7 +30,7 @@ public:
 	}
 
 	static void OnActivateServer();
-	void OnPlayerActive();
+	void OnPlayerAuthorized();
 	void OnClientDisconnect();
 
 	/**

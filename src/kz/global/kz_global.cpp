@@ -157,13 +157,8 @@ void KZGlobalService::OnActivateServer()
 	KZGlobalService::SendMessage("map-change", data, callback);
 }
 
-void KZGlobalService::OnPlayerActive()
+void KZGlobalService::OnPlayerAuthorized()
 {
-	if (!this->player->IsConnected() || !this->player->IsAuthenticated())
-	{
-		return;
-	}
-
 	KZ::API::events::PlayerJoin data;
 	data.steamId = this->player->GetSteamId64();
 	data.name = this->player->GetName();
