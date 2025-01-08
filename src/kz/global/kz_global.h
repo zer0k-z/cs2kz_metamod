@@ -14,6 +14,12 @@ class KZGlobalService : public KZBaseService
 public:
 	static void Init();
 	static void Cleanup();
+	static void RegisterCommands();
+
+	static const char *ApiURL()
+	{
+		return KZGlobalService::apiUrl.empty() ? nullptr : KZGlobalService::apiUrl.c_str();
+	}
 
 	/**
 	 * Returns wheter we are currently connected to the API.
