@@ -7,6 +7,8 @@
 #include <chrono>
 #include <thread>
 
+#include <ixwebsocket/IXNetSystem.h>
+
 #include "common.h"
 #include "kz/kz.h"
 #include "kz/mode/kz_mode.h"
@@ -162,11 +164,10 @@ void KZGlobalService::OnPlayerActive()
 		return;
 	}
 
-	KZ::API::events::PlayerJoin data = {
-		.steamId = this->player->GetSteamId64(),
-		.name = this->player->GetName(),
-		.ipAddress = this->player->GetIpAddress(),
-	};
+	KZ::API::events::PlayerJoin data;
+	data.steamId = this->player->GetSteamId64();
+	data.name = this->player->GetName();
+	data.ipAddress = this->player->GetIpAddress();
 
 	auto callback = [player = this->player](const KZ::API::events::PlayerJoinAck &ack)
 	{
@@ -182,10 +183,9 @@ void KZGlobalService::OnPlayerActive()
 
 	if (KZGlobalService::currentMap.has_value())
 	{
-		KZ::API::events::WantPlayerRecords data = {
-			.mapId = KZGlobalService::currentMap->id,
-			.playerId = this->player->GetSteamId64(),
-		};
+		KZ::API::events::WantPlayerRecords data;
+		data.mapId = KZGlobalService::currentMap->id;
+		data.playerId = this->player->GetSteamId64();
 
 		auto callback = [player = this->player](const KZ::API::events::PlayerRecords &pbs)
 		{
@@ -228,11 +228,10 @@ void KZGlobalService::OnClientDisconnect()
 		return;
 	}
 
-	KZ::API::events::PlayerLeave data = {
-		.steamId = this->player->GetSteamId64(),
-		.name = this->player->GetName(),
-		.preferences = Json(getPrefsResult.Get()),
-	};
+	KZ::API::events::PlayerLeave data;
+	data.steamId = this->player->GetSteamId64();
+	data.name = this->player->GetName();
+	data.preferences = Json(getPrefsResult.Get());
 
 	KZGlobalService::SendMessage("player-leave", data);
 }
@@ -268,37 +267,29 @@ bool KZGlobalService::SubmitRecord(u32 localId, const char *courseName, const ch
 		return false;
 	}
 
-	KZ::API::events::NewRecord data = {
-		.playerId = this->player->GetSteamId64(),
-		.filterId = KZ_STREQI(modeName, "vnl") ? course->filters.vanilla.id : course->filters.classic.id,
-		.styles = {}, // TODO
-		.teleports = teleports,
-		.time = time,
-	};
+	KZ::API::events::NewRecord data;
+	data.playerId = this->player->GetSteamId64();
+	data.filterId = KZ_STREQI(modeName, "vnl") ? course->filters.vanilla.id : course->filters.classic.id;
+	data.styles = {}; // TODO
+	data.teleports = teleports;
+	data.time = time;
 
 	auto callback = [time, localId](const KZ::API::events::NewRecordAck &ack)
 	{
 		META_CONPRINTF("[KZ::Global] Record submitted under ID %d\n", ack.recordId);
 
-		KZ::timer::GlobalRankData data = {
-			.recordId = ack.recordId,
-			.playerRating = ack.playerRating,
-			.time = time,
-			.nubData =
-				{
-					.isFirstRun = ack.nubData.isFirstRun,
-					.rank = ack.nubData.rank,
-					.points = ack.nubData.points,
-					.maxRank = ack.nubData.leaderboardSize,
-				},
-			.proData =
-				{
-					.isFirstRun = ack.proData.isFirstRun,
-					.rank = ack.proData.rank,
-					.points = ack.proData.points,
-					.maxRank = ack.proData.leaderboardSize,
-				},
-		};
+		KZ::timer::GlobalRankData data;
+		data.recordId = ack.recordId;
+		data.playerRating = ack.playerRating;
+		data.time = time;
+		data.nubData.isFirstRun = ack.nubData.isFirstRun;
+		data.nubData.rank = ack.nubData.rank;
+		data.nubData.points = ack.nubData.points;
+		data.nubData.maxRank = ack.nubData.leaderboardSize;
+		data.proData.isFirstRun = ack.proData.isFirstRun;
+		data.proData.rank = ack.proData.rank;
+		data.proData.points = ack.proData.points;
+		data.proData.maxRank = ack.proData.leaderboardSize;
 
 		KZ::timer::UpdateGlobalRankData(localId, data);
 	};
