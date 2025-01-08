@@ -1077,10 +1077,23 @@ void KZTimerService::ClearPBCache()
 	this->localPBCache.clear();
 }
 
-void KZTimerService::InsertPBToCache(f64 time, const KZCourse *course, PluginId modeID, bool overall, bool global, CUtlString metadata)
+const PBData *KZTimerService::GetCachedPB(const KZCourse *course, PluginId modeID)
+{
+	PBDataKey key = ToPBDataKey(modeID, course->guid);
+
+	if (this->globalPBCache.find(key) == this->globalPBCache.end())
+	{
+		return nullptr;
+	}
+
+	return &this->globalPBCache[key];
+}
+
+void KZTimerService::InsertPBToCache(f64 time, const KZCourse *course, PluginId modeID, bool overall, bool global, CUtlString metadata, f64 points)
 {
 	PBData &pb = global ? this->globalPBCache[ToPBDataKey(modeID, course->guid)] : this->localPBCache[ToPBDataKey(modeID, course->guid)];
 
+	overall ? pb.overall.points = points : pb.pro.points = points;
 	overall ? pb.overall.pbTime = time : pb.pro.pbTime = time;
 	KeyValues3 kv(KV3_TYPEEX_TABLE, KV3_SUBTYPE_UNSPECIFIED);
 	CUtlString error = "";

@@ -17,6 +17,7 @@
 #include "timer/kz_timer.h"
 #include "tip/kz_tip.h"
 #include "trigger/kz_trigger.h"
+#include "global/kz_global.h"
 
 #include "sdk/datatypes.h"
 #include "sdk/entity/cbasetrigger.h"
@@ -47,6 +48,7 @@ void KZPlayer::Init()
 	delete this->tipService;
 	delete this->telemetryService;
 	delete this->triggerService;
+	delete this->globalService;
 
 	this->checkpointService = new KZCheckpointService(this);
 	this->jumpstatsService = new KZJumpstatsService(this);
@@ -62,6 +64,7 @@ void KZPlayer::Init()
 	this->tipService = new KZTipService(this);
 	this->telemetryService = new KZTelemetryService(this);
 	this->triggerService = new KZTriggerService(this);
+	this->globalService = new KZGlobalService(this);
 
 	KZ::mode::InitModeService(this);
 }
@@ -101,6 +104,11 @@ void KZPlayer::OnPlayerActive()
 	g_pKZStyleManager->RefreshStyles(this);
 
 	this->optionService->OnPlayerActive();
+
+	if (this->globalService != nullptr)
+	{
+		this->globalService->OnPlayerActive();
+	}
 }
 
 void KZPlayer::OnAuthorized()
