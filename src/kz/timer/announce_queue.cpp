@@ -3,6 +3,7 @@
 #include "kz/language/kz_language.h"
 #include "kz/mode/kz_mode.h"
 #include "kz/style/kz_style.h"
+#include "kz/global/kz_global.h"
 using namespace KZ::timer;
 #define ANNOUNCEMENT_WAIT_THRESHOLD 5.0f
 
@@ -24,6 +25,10 @@ public:
 		if (KZDatabaseService::IsReady() && player->IsAuthenticated())
 		{
 			KZDatabaseService::SaveTime(id, player, courseName, time, teleportsUsed, metadata);
+		}
+		if (KZGlobalService::IsConnected() && player->IsAuthenticated())
+		{
+			player->globalService->SubmitRecord(id, courseName.Get(), modeName, time, teleportsUsed, metadata);
 		}
 	}
 
@@ -47,7 +52,7 @@ public:
 			return false;
 		}
 		// If there is a global service but the response hasn't arrived yet...
-		if (false /*KZGlobalService::IsReady*/ && !hasGlobalRank)
+		if (KZGlobalService::IsConnected() && !hasGlobalRank)
 		{
 			return false;
 		}
@@ -105,12 +110,6 @@ public:
 		char formattedDiffTimeLocalPro[32];
 		KZTimerService::FormatDiffTime(localRankData.pbDiffPro, formattedDiffTimeLocalPro, sizeof(formattedDiffTimeLocalPro));
 
-		char formattedDiffTimeGlobal[32];
-		KZTimerService::FormatDiffTime(globalRankData.pbDiff, formattedDiffTimeGlobal, sizeof(formattedDiffTimeGlobal));
-
-		char formattedDiffTimeGlobalPro[32];
-		KZTimerService::FormatDiffTime(globalRankData.pbDiffPro, formattedDiffTimeGlobalPro, sizeof(formattedDiffTimeGlobalPro));
-
 		/*
 			KZ | GameChaos finished "blocks2006" in 10:06.84 [VNL | PRO]
 			KZ | Server Rank: #1/24 Overall (-1:00.00) | #1/10 PRO (-2:00)
@@ -158,25 +157,52 @@ public:
 			// Print global information if available.
 			if (HasValidGlobalRank())
 			{
-				// clang-format off
-				std::string diffText = globalRankData.firstTime ? 
-					"" : player->languageService->PrepareMessage("Personal Best Difference", globalRankData.pbDiff < 0 ? "{green}" : "{red}", formattedDiffTimeGlobal);
-				std::string diffTextPro = globalRankData.firstTimePro ? 
-					"" : player->languageService->PrepareMessage("Personal Best Difference", globalRankData.pbDiffPro < 0 ? "{green}" : "{red}", formattedDiffTimeGlobalPro);
+				const KZCourse *course = KZ::course::GetCourse(this->courseName);
+				const PluginId modeID = KZ::mode::GetModeInfo(this->modeName).id;
+				const PBData *oldPB = player->timerService->GetGlobalCachedPB(course, modeID);
 
+				f64 nubPbDiff = oldPB ? (globalRankData.time - oldPB->overall.pbTime) : 0;
+				f64 nubPointsDiff = oldPB ? (globalRankData.nubData.points - oldPB->overall.points) : 0;
+
+				char formattedDiffTimeGlobal[32];
+				KZTimerService::FormatDiffTime(nubPbDiff, formattedDiffTimeGlobal, sizeof(formattedDiffTimeGlobal));
+
+				// clang-format off
+				std::string diffText = globalRankData.nubData.isFirstRun
+					? ""
+					: player->languageService->PrepareMessage("Personal Best Difference", nubPbDiff < 0 ? "{green}" : "{red}", formattedDiffTimeGlobal);
 				// clang-format on
-				if (teleportsUsed > 0)
+
+				if (globalRankData.nubData.points != -1)
 				{
-					player->languageService->PrintChat(true, false, "Beat Course Info - Global (TP)", globalRankData.rank, globalRankData.maxRank,
-													   diffText.c_str());
+					player->languageService->PrintChat(true, false, "Beat Course Info - Global (TP)", globalRankData.nubData.rank,
+													   globalRankData.nubData.maxRank, diffText.c_str());
+
+					player->languageService->PrintChat(true, false, "Beat Course Info - Global Points", globalRankData.nubData.points, nubPointsDiff,
+													   globalRankData.playerRating);
 				}
-				else
+
+				if (globalRankData.proData.rank != 0)
 				{
-					player->languageService->PrintChat(true, false, "Beat Course Info - Global (PRO)", globalRankData.rank, globalRankData.maxRank,
-													   diffText.c_str(), globalRankData.rankPro, globalRankData.maxRankPro, diffTextPro.c_str());
+					f64 proPbDiff = oldPB ? (globalRankData.time - oldPB->overall.pbTime) : 0;
+					f64 proPointsDiff = oldPB ? (globalRankData.proData.points - oldPB->overall.points) : 0;
+
+					char formattedDiffTimeGlobalPro[32];
+					KZTimerService::FormatDiffTime(proPbDiff, formattedDiffTimeGlobalPro, sizeof(formattedDiffTimeGlobalPro));
+
+					// clang-format off
+					std::string diffTextPro = globalRankData.proData.isFirstRun
+						? ""
+						: player->languageService->PrepareMessage("Personal Best Difference", proPbDiff < 0 ? "{green}" : "{red}", formattedDiffTimeGlobalPro);
+					// clang-format on
+
+					player->languageService->PrintChat(true, false, "Beat Course Info - Global (PRO)", globalRankData.nubData.rank,
+													   globalRankData.nubData.maxRank, diffText.c_str(), globalRankData.proData.rank,
+													   globalRankData.proData.maxRank, diffTextPro.c_str());
+
+					player->languageService->PrintChat(true, false, "Beat Course Info - Global Points", globalRankData.proData.points, proPointsDiff,
+													   globalRankData.playerRating);
 				}
-				player->languageService->PrintChat(true, false, "Beat Course Info - Global Points", globalRankData.mapPointsGained,
-												   globalRankData.totalMapPoints, globalRankData.playerRating);
 			}
 		}
 		// TODO: Maybe do something if we have local/global database connection but the information is not available?
@@ -210,6 +236,11 @@ void KZ::timer::UpdateGlobalRankData(u32 id, GlobalRankData data)
 	{
 		if (announceQueue[i].id == id)
 		{
+			if (data.nubData.rank > 0 || data.proData.rank > 0)
+			{
+				announceQueue[i].hasGlobalRank = true;
+			}
+
 			announceQueue[i].globalRankData = data;
 			return;
 		}
